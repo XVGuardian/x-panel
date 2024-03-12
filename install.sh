@@ -8,7 +8,7 @@ plain='\033[0m'
 cur_dir=$(pwd)
 
 # check root
-[[ $EUID -ne 0 ]] && echo -e "${red}错误：${plain} 必须使用root用户运行此脚本！\n" && exit 1
+[[ $EUID -ne 0 ]] && echo -e "${red}Error:${plain} This script must be run as root!\n" && exit 1
 
 # check os
 if [[ -f /etc/redhat-release ]]; then
@@ -26,7 +26,7 @@ elif cat /proc/version | grep -Eqi "ubuntu"; then
 elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
     release="centos"
 else
-    echo -e "${red}未检测到系统版本，请联系脚本作者！${plain}\n" && exit 1
+    echo -e "${red}System version not detected, please contact the script author!${plain}\n" && exit 1
 fi
 
 arch=$(arch)
@@ -37,13 +37,13 @@ elif [[ $arch == "aarch64" || $arch == "arm64" ]]; then
   arch="arm64"
 else
   arch="amd64"
-  echo -e "${red}检测架构失败，使用默认架构: ${arch}${plain}"
+  echo -e "${red}Architecture detection failed, using default architecture: ${arch}${plain}"
 fi
 
-echo "架构: ${arch}"
+echo "Architecture: ${arch}"
 
 if [ $(getconf WORD_BIT) != '32' ] && [ $(getconf LONG_BIT) != '64' ] ; then
-    echo "本软件不支持 32 位系统(x86)，请使用 64 位系统(x86_64)，如果检测有误，请联系作者"
+    echo "This software does not support 32-bit systems (x86), please use 64-bit systems (x86_64), if detected incorrectly, please contact the author"
     exit -1
 fi
 
@@ -59,15 +59,15 @@ fi
 
 if [[ x"${release}" == x"centos" ]]; then
     if [[ ${os_version} -le 6 ]]; then
-        echo -e "${red}请使用 CentOS 7 或更高版本的系统！${plain}\n" && exit 1
+        echo -e "${red}Please use CentOS 7 or later versions of the system!${plain}\n" && exit 1
     fi
 elif [[ x"${release}" == x"ubuntu" ]]; then
     if [[ ${os_version} -lt 16 ]]; then
-        echo -e "${red}请使用 Ubuntu 16 或更高版本的系统！${plain}\n" && exit 1
+        echo -e "${red}Please use Ubuntu 16 or later versions of the system!${plain}\n" && exit 1
     fi
 elif [[ x"${release}" == x"debian" ]]; then
     if [[ ${os_version} -lt 8 ]]; then
-        echo -e "${red}请使用 Debian 8 或更高版本的系统！${plain}\n" && exit 1
+        echo -e "${red}Please use Debian 8 or later versions of the system!${plain}\n" && exit 1
     fi
 fi
 
@@ -86,22 +86,22 @@ install_x-panel() {
     if  [ $# == 0 ] ;then
         last_version=$(curl -Ls "https://api.github.com/repos/XVGuardian/x-panel/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         if [[ ! -n "$last_version" ]]; then
-            echo -e "${red}检测 x-panel 版本失败，可能是超出 Github API 限制，请稍后再试，或手动指定 x-panel 版本安装${plain}"
+            echo -e "${red}Failed to detect x-panel version, may exceed Github API limit, please try again later, or specify x-panel version manually${plain}"
             exit 1
         fi
-        echo -e "检测到 x-panel 最新版本：${last_version}，开始安装"
+        echo -e "Detected latest version of x-panel: ${last_version}, starting installation"
         wget -N --no-check-certificate -O /usr/local/x-panel-linux-${arch}.tar.gz https://github.com/XVGuardian/x-panel/releases/download/${last_version}/x-panel-linux-${arch}.tar.gz
         if [[ $? -ne 0 ]]; then
-            echo -e "${red}下载 x-panel 失败，请确保你的服务器能够下载 Github 的文件${plain}"
+            echo -e "${red}Download of x-panel failed, please make sure your server can download files from Github${plain}"
             exit 1
         fi
     else
         last_version=$1
         url="https://github.com/XVGuardian/x-panel/releases/download/${last_version}/x-panel-linux-${arch}.tar.gz"
-        echo -e "开始安装 x-panel v$1"
+        echo -e "Starting installation of x-panel v$1"
         wget -N --no-check-certificate -O /usr/local/x-panel-linux-${arch}.tar.gz ${url}
         if [[ $? -ne 0 ]]; then
-            echo -e "${red}下载 x-panel v$1 失败，请确保此版本存在${plain}"
+            echo -e "${red}Download of x-panel v$1 failed, please make sure this version exists${plain}"
             exit 1
         fi
     fi
@@ -119,31 +119,31 @@ install_x-panel() {
     systemctl daemon-reload
     systemctl enable x-panel
     systemctl start x-panel
-    echo -e "${green}x-panel v${last_version}${plain} 安装完成，面板已启动，"
+    echo -e "${green}x-panel v${last_version}${plain} installation completed, panel has started,"
     echo -e ""
-    echo -e "如果是全新安装，默认网页端口为 ${green}54321${plain}，用户名和密码默认都是 ${green}admin${plain}"
-    echo -e "请自行确保此端口没有被其他程序占用，${yellow}并且确保 54321 端口已放行${plain}"
-#    echo -e "若想将 54321 修改为其它端口，输入 x-panel 命令进行修改，同样也要确保你修改的端口也是放行的"
+    echo -e "If it is a new installation, the default web port is ${green}54321${plain}, both the username and password are default to ${green}admin${plain}"
+    echo -e "Please ensure that this port is not occupied by other programs, ${yellow}and make sure port 54321 is open${plain}"
+#    echo -e "To change 54321 to another port, type x-panel command to modify, and also ensure that the port you modify is open"
     echo -e ""
-    echo -e "如果是更新面板，则按你之前的方式访问面板"
+    echo -e "If it is an update to the panel, access the panel in the same way as before"
     echo -e ""
-    echo -e "x-panel 管理脚本使用方法: "
+    echo -e "x-panel management script usage: "
     echo -e "----------------------------------------------"
-    echo -e "x-panel              - 显示管理菜单 (功能更多)"
-    echo -e "x-panel start        - 启动 x-panel 面板"
-    echo -e "x-panel stop         - 停止 x-panel 面板"
-    echo -e "x-panel restart      - 重启 x-panel 面板"
-    echo -e "x-panel status       - 查看 x-panel 状态"
-    echo -e "x-panel enable       - 设置 x-panel 开机自启"
-    echo -e "x-panel disable      - 取消 x-panel 开机自启"
-    echo -e "x-panel log          - 查看 x-panel 日志"
-    echo -e "x-panel v2-ui        - 迁移本机器的 v2-ui 账号数据至 x-panel"
-    echo -e "x-panel update       - 更新 x-panel 面板"
-    echo -e "x-panel install      - 安装 x-panel 面板"
-    echo -e "x-panel uninstall    - 卸载 x-panel 面板"
+    echo -e "x-panel              - Display management menu (more functions)"
+    echo -e "x-panel start        - Start x-panel panel"
+    echo -e "x-panel stop         - Stop x-panel panel"
+    echo -e "x-panel restart      - Restart x-panel panel"
+    echo -e "x-panel status       - Check x-panel status"
+    echo -e "x-panel enable       - Set x-panel to start automatically on boot"
+    echo -e "x-panel disable      - Disable x-panel from starting automatically on boot"
+    echo -e "x-panel log          - View x-panel logs"
+    echo -e "x-panel v2-ui        - Migrate v2-ui account data from this machine to x-panel"
+    echo -e "x-panel update       - Update x-panel panel"
+    echo -e "x-panel install      - Install x-panel panel"
+    echo -e "x-panel uninstall    - Uninstall x-panel panel"
     echo -e "----------------------------------------------"
 }
 
-echo -e "${green}开始安装${plain}"
+echo -e "${green}Installation started${plain}"
 install_base
 install_x-panel $1
