@@ -44,7 +44,7 @@ echo "Architecture: ${arch}"
 
 if [ $(getconf WORD_BIT) != '32' ] && [ $(getconf LONG_BIT) != '64' ] ; then
     echo "This software does not support 32-bit systems (x86), please use 64-bit systems (x86_64), if detected incorrectly, please contact the author"
-    exit -1
+    exit 1
 fi
 
 os_version=""
