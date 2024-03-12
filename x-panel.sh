@@ -468,7 +468,7 @@ show_menu() {
 }
 
 
-if [[ $# > 0 ]]; then
+if [[ $# -gt 0 ]]; then
     case $1 in
         "start") check_install 0 && start 0
         ;;
