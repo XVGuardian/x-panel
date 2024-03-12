@@ -6,7 +6,7 @@ yellow='\033[0;33m'
 plain='\033[0m'
 
 # check root
-[[ $EUID -ne 0 ]] && echo -e "${red}错误: ${plain} 必须使用root用户运行此脚本！\n" && exit 1
+[[ $EUID -ne 0 ]] && echo -e "${red}Error: ${plain}This script must be run as root!\n" && exit 1
 
 # check os
 if [[ -f /etc/redhat-release ]]; then
@@ -24,7 +24,7 @@ elif cat /proc/version | grep -Eqi "ubuntu"; then
 elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
     release="centos"
 else
-    echo -e "${red}未检测到系统版本，请联系脚本作者！${plain}\n" && exit 1
+    echo -e "${red}System version not detected, please contact the script author!${plain}\n" && exit 1
 fi
 
 os_version=""
@@ -39,21 +39,21 @@ fi
 
 if [[ x"${release}" == x"centos" ]]; then
     if [[ ${os_version} -le 6 ]]; then
-        echo -e "${red}请使用 CentOS 7 或更高版本的系统！${plain}\n" && exit 1
+        echo -e "${red}Please use CentOS 7 or later!${plain}\n" && exit 1
     fi
 elif [[ x"${release}" == x"ubuntu" ]]; then
     if [[ ${os_version} -lt 16 ]]; then
-        echo -e "${red}请使用 Ubuntu 16 或更高版本的系统！${plain}\n" && exit 1
+        echo -e "${red}Please use Ubuntu 16 or later!${plain}\n" && exit 1
     fi
 elif [[ x"${release}" == x"debian" ]]; then
     if [[ ${os_version} -lt 8 ]]; then
-        echo -e "${red}请使用 Debian 8 或更高版本的系统！${plain}\n" && exit 1
+        echo -e "${red}Please use Debian 8 or later!${plain}\n" && exit 1
     fi
 fi
 
 confirm() {
     if [[ $# > 1 ]]; then
-        echo && read -p "$1 [默认$2]: " temp
+        echo && read -p "$1 [default $2]: " temp
         if [[ x"${temp}" == x"" ]]; then
             temp=$2
         fi
@@ -68,7 +68,7 @@ confirm() {
 }
 
 confirm_restart() {
-    confirm "是否重启面板，重启面板也会重启 xray" "y"
+    confirm "Restart the panel, which will also restart xray?" "y"
     if [[ $? == 0 ]]; then
         restart
     else
@@ -77,7 +77,7 @@ confirm_restart() {
 }
 
 before_show_menu() {
-    echo && echo -n -e "${yellow}按回车返回主菜单: ${plain}" && read temp
+    echo && echo -n -e "${yellow}Press Enter to return to the main menu: ${plain}" && read temp
     show_menu
 }
 
@@ -93,9 +93,9 @@ install() {
 }
 
 update() {
-    confirm "本功能会强制重装当前最新版，数据不会丢失，是否继续?" "n"
+    confirm "This function will forcefully reinstall the current latest version, data will not be lost, continue?" "n"
     if [[ $? != 0 ]]; then
-        echo -e "${red}已取消${plain}"
+        echo -e "${red}Canceled${plain}"
         if [[ $# == 0 ]]; then
             before_show_menu
         fi
@@ -103,13 +103,13 @@ update() {
     fi
     bash <(curl -Ls https://raw.githubusercontent.com/XVGuardian/x-panel/master/install.sh)
     if [[ $? == 0 ]]; then
-        echo -e "${green}更新完成，已自动重启面板${plain}"
+        echo -e "${green}Update completed, panel has been automatically restarted${plain}"
         exit 0
     fi
 }
 
 uninstall() {
-    confirm "确定要卸载面板吗，xray 也会卸载?" "n"
+    confirm "Are you sure you want to uninstall the panel, xray will also be uninstalled?" "n"
     if [[ $? != 0 ]]; then
         if [[ $# == 0 ]]; then
             show_menu
@@ -125,7 +125,7 @@ uninstall() {
     rm /usr/local/x-panel/ -rf
 
     echo ""
-    echo -e "卸载成功，如果你想删除此脚本，则退出脚本后运行 ${green}rm /usr/bin/x-panel -f${plain} 进行删除"
+    echo -e "Uninstalled successfully, if you want to delete this script, run ${green}rm /usr/bin/x-panel -f${plain} after exiting the script"
     echo ""
 
     if [[ $# == 0 ]]; then
@@ -134,7 +134,7 @@ uninstall() {
 }
 
 reset_user() {
-    confirm "确定要将用户名和密码重置为 admin 吗" "n"
+    confirm "Are you sure you want to reset the username and password to admin?" "n"
     if [[ $? != 0 ]]; then
         if [[ $# == 0 ]]; then
             show_menu
@@ -142,12 +142,12 @@ reset_user() {
         return 0
     fi
     /usr/local/x-panel/x-panel setting -username admin -password admin
-    echo -e "用户名和密码已重置为 ${green}admin${plain}，现在请重启面板"
+    echo -e "Username and password have been reset to ${green}admin${plain}, now please restart the panel"
     confirm_restart
 }
 
 reset_config() {
-    confirm "确定要重置所有面板设置吗，账号数据不会丢失，用户名和密码不会改变" "n"
+    confirm "Are you sure you want to reset all panel settings, account data will not be lost, username and password will not change?" "n"
     if [[ $? != 0 ]]; then
         if [[ $# == 0 ]]; then
             show_menu
@@ -155,18 +155,18 @@ reset_config() {
         return 0
     fi
     /usr/local/x-panel/x-panel setting -reset
-    echo -e "所有面板设置已重置为默认值，现在请重启面板，并使用默认的 ${green}54321${plain} 端口访问面板"
+    echo -e "All panel settings have been reset to default values, now please restart the panel, and access the panel using the default ${green}54321${plain} port"
     confirm_restart
 }
 
 set_port() {
-    echo && echo -n -e "输入端口号[1-65535]: " && read port
+    echo && echo -n -e "Enter the port number[1-65535]: " && read port
     if [[ -z "${port}" ]]; then
-        echo -e "${yellow}已取消${plain}"
+        echo -e "${yellow}Canceled${plain}"
         before_show_menu
     else
         /usr/local/x-panel/x-panel setting -port ${port}
-        echo -e "设置端口完毕，现在请重启面板，并使用新设置的端口 ${green}${port}${plain} 访问面板"
+        echo -e "Port setting complete, now please restart the panel, and access the panel using the newly set port ${green}${port}${plain}"
         confirm_restart
     fi
 }
@@ -175,15 +175,15 @@ start() {
     check_status
     if [[ $? == 0 ]]; then
         echo ""
-        echo -e "${green}面板已运行，无需再次启动，如需重启请选择重启${plain}"
+        echo -e "${green}Panel is already running, no need to start again, select restart if you need to restart${plain}"
     else
         systemctl start x-panel
         sleep 2
         check_status
         if [[ $? == 0 ]]; then
-            echo -e "${green}x-panel 启动成功${plain}"
+            echo -e "${green}x-panel started successfully${plain}"
         else
-            echo -e "${red}面板启动失败，可能是因为启动时间超过了两秒，请稍后查看日志信息${plain}"
+            echo -e "${red}Panel startup failed, possibly because the startup time exceeded two seconds, please check the log information later${plain}"
         fi
     fi
 
@@ -196,15 +196,15 @@ stop() {
     check_status
     if [[ $? == 1 ]]; then
         echo ""
-        echo -e "${green}面板已停止，无需再次停止${plain}"
+        echo -e "${green}Panel is already stopped, no need to stop again${plain}"
     else
         systemctl stop x-panel
         sleep 2
         check_status
         if [[ $? == 1 ]]; then
-            echo -e "${green}x-panel 与 xray 停止成功${plain}"
+            echo -e "${green}x-panel and xray stopped successfully${plain}"
         else
-            echo -e "${red}面板停止失败，可能是因为停止时间超过了两秒，请稍后查看日志信息${plain}"
+            echo -e "${red}Panel stop failed, possibly because the stop time exceeded two seconds, please check the log information later${plain}"
         fi
     fi
 
@@ -218,9 +218,9 @@ restart() {
     sleep 2
     check_status
     if [[ $? == 0 ]]; then
-        echo -e "${green}x-panel 与 xray 重启成功${plain}"
+        echo -e "${green}x-panel and xray restarted successfully${plain}"
     else
-        echo -e "${red}面板重启失败，可能是因为启动时间超过了两秒，请稍后查看日志信息${plain}"
+        echo -e "${red}Panel restart failed, possibly because the startup time exceeded two seconds, please check the log information later${plain}"
     fi
     if [[ $# == 0 ]]; then
         before_show_menu
@@ -237,9 +237,9 @@ status() {
 enable() {
     systemctl enable x-panel
     if [[ $? == 0 ]]; then
-        echo -e "${green}x-panel 设置开机自启成功${plain}"
+        echo -e "${green}x-panel set to start on boot successfully${plain}"
     else
-        echo -e "${red}x-panel 设置开机自启失败${plain}"
+        echo -e "${red}x-panel failed to set to start on boot${plain}"
     fi
 
     if [[ $# == 0 ]]; then
@@ -250,9 +250,9 @@ enable() {
 disable() {
     systemctl disable x-panel
     if [[ $? == 0 ]]; then
-        echo -e "${green}x-panel 取消开机自启成功${plain}"
+        echo -e "${green}x-panel successfully disabled from starting on boot${plain}"
     else
-        echo -e "${red}x-panel 取消开机自启失败${plain}"
+        echo -e "${red}x-panel failed to disable from starting on boot${plain}"
     fi
 
     if [[ $# == 0 ]]; then
@@ -284,11 +284,11 @@ update_shell() {
     wget -O /usr/bin/x-panel -N --no-check-certificate https://github.com/XVGuardian/x-panel/raw/master/x-panel.sh
     if [[ $? != 0 ]]; then
         echo ""
-        echo -e "${red}下载脚本失败，请检查本机能否连接 Github${plain}"
+        echo -e "${red}Script download failed, please check if this machine can connect to Github${plain}"
         before_show_menu
     else
         chmod +x /usr/bin/x-panel
-        echo -e "${green}升级脚本成功，请重新运行脚本${plain}" && exit 0
+        echo -e "${green}Script upgrade successful, please rerun the script${plain}" && exit 0
     fi
 }
 
@@ -318,7 +318,7 @@ check_uninstall() {
     check_status
     if [[ $? != 2 ]]; then
         echo ""
-        echo -e "${red}面板已安装，请不要重复安装${plain}"
+        echo -e "${red}Panel is already installed, please do not reinstall${plain}"
         if [[ $# == 0 ]]; then
             before_show_menu
         fi
@@ -332,7 +332,7 @@ check_install() {
     check_status
     if [[ $? == 2 ]]; then
         echo ""
-        echo -e "${red}请先安装面板${plain}"
+        echo -e "${red}Please install the panel first${plain}"
         if [[ $# == 0 ]]; then
             before_show_menu
         fi
@@ -346,15 +346,15 @@ show_status() {
     check_status
     case $? in
         0)
-            echo -e "面板状态: ${green}已运行${plain}"
+            echo -e "Panel status: ${green}Running${plain}"
             show_enable_status
             ;;
         1)
-            echo -e "面板状态: ${yellow}未运行${plain}"
+            echo -e "Panel status: ${yellow}Not Running${plain}"
             show_enable_status
             ;;
         2)
-            echo -e "面板状态: ${red}未安装${plain}"
+            echo -e "Panel status: ${red}Not Installed${plain}"
     esac
     show_xray_status
 }
@@ -362,9 +362,9 @@ show_status() {
 show_enable_status() {
     check_enabled
     if [[ $? == 0 ]]; then
-        echo -e "是否开机自启: ${green}是${plain}"
+        echo -e "Auto Start: ${green}Yes${plain}"
     else
-        echo -e "是否开机自启: ${red}否${plain}"
+        echo -e "Auto Start: ${red}No${plain}"
     fi
 }
 
@@ -380,56 +380,56 @@ check_xray_status() {
 show_xray_status() {
     check_xray_status
     if [[ $? == 0 ]]; then
-        echo -e "xray 状态: ${green}运行${plain}"
+        echo -e "Xray Status: ${green}Running${plain}"
     else
-        echo -e "xray 状态: ${red}未运行${plain}"
+        echo -e "Xray Status: ${red}Not Running${plain}"
     fi
 }
 
 show_usage() {
-    echo "x-panel 管理脚本使用方法: "
+    echo "x-panel management script usage: "
     echo "------------------------------------------"
-    echo "x-panel              - 显示管理菜单 (功能更多)"
-    echo "x-panel start        - 启动 x-panel 面板"
-    echo "x-panel stop         - 停止 x-panel 面板"
-    echo "x-panel restart      - 重启 x-panel 面板"
-    echo "x-panel status       - 查看 x-panel 状态"
-    echo "x-panel enable       - 设置 x-panel 开机自启"
-    echo "x-panel disable      - 取消 x-panel 开机自启"
-    echo "x-panel log          - 查看 x-panel 日志"
-    echo "x-panel v2-ui        - 迁移本机器的 v2-ui 账号数据至 x-panel"
-    echo "x-panel update       - 更新 x-panel 面板"
-    echo "x-panel install      - 安装 x-panel 面板"
-    echo "x-panel uninstall    - 卸载 x-panel 面板"
+    echo "x-panel              - Display management menu (more features)"
+    echo "x-panel start        - Start x-panel panel"
+    echo "x-panel stop         - Stop x-panel panel"
+    echo "x-panel restart      - Restart x-panel panel"
+    echo "x-panel status       - Check x-panel status"
+    echo "x-panel enable       - Set x-panel to start on boot"
+    echo "x-panel disable      - Disable x-panel from starting on boot"
+    echo "x-panel log          - View x-panel logs"
+    echo "x-panel v2-ui        - Migrate v2-ui account data on this machine to x-panel"
+    echo "x-panel update       - Update x-panel panel"
+    echo "x-panel install      - Install x-panel panel"
+    echo "x-panel uninstall    - Uninstall x-panel panel"
     echo "------------------------------------------"
 }
 
 show_menu() {
     echo -e "
-  ${green}x-panel 面板管理脚本${plain}
-  ${green}0.${plain} 退出脚本
+  ${green}x-panel Panel Management Script${plain}
+  ${green}0.${plain} Exit Script
 ————————————————
-  ${green}1.${plain} 安装 x-panel
-  ${green}2.${plain} 更新 x-panel
-  ${green}3.${plain} 卸载 x-panel
+  ${green}1.${plain} Install x-panel
+  ${green}2.${plain} Update x-panel
+  ${green}3.${plain} Uninstall x-panel
 ————————————————
-  ${green}4.${plain} 重置用户名密码
-  ${green}5.${plain} 重置面板设置
-  ${green}6.${plain} 设置面板端口
+  ${green}4.${plain} Reset Username and Password
+  ${green}5.${plain} Reset Panel Settings
+  ${green}6.${plain} Set Panel Port
 ————————————————
-  ${green}7.${plain} 启动 x-panel
-  ${green}8.${plain} 停止 x-panel
-  ${green}9.${plain} 重启 x-panel
- ${green}10.${plain} 查看 x-panel 状态
- ${green}11.${plain} 查看 x-panel 日志
+  ${green}7.${plain} Start x-panel
+  ${green}8.${plain} Stop x-panel
+  ${green}9.${plain} Restart x-panel
+ ${green}10.${plain} Check x-panel status
+ ${green}11.${plain} View x-panel logs
 ————————————————
- ${green}12.${plain} 设置 x-panel 开机自启
- ${green}13.${plain} 取消 x-panel 开机自启
+ ${green}12.${plain} Set x-panel to start on boot
+ ${green}13.${plain} Disable x-panel from starting on boot
 ————————————————
- ${green}14.${plain} 一键安装 bbr (最新内核)
+ ${green}14.${plain} One-click install BBR (latest kernel)
  "
     show_status
-    echo && read -p "请输入选择 [0-14]: " num
+    echo && read -p "Please enter your choice [0-14]: " num
 
     case "${num}" in
         0) exit 0
@@ -462,7 +462,7 @@ show_menu() {
         ;;
         14) install_bbr
         ;;
-        *) echo -e "${red}请输入正确的数字 [0-14]${plain}"
+        *) echo -e "${red}Please enter a valid number [0-14]${plain}"
         ;;
     esac
 }
