@@ -52,7 +52,7 @@ elif [[ x"${release}" == x"debian" ]]; then
 fi
 
 confirm() {
-    if [[ $# > 1 ]]; then
+    if [[ $# -gt 1 ]]; then
         echo && read -p "$1 [default $2]: " temp
         if [[ x"${temp}" == x"" ]]; then
             temp=$2
